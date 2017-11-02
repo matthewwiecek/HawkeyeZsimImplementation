@@ -55,6 +55,7 @@
 #include "ooo_core.h"
 #include "part_repl_policies.h"
 #include "rrip_repl.h"
+#include "repl_hawkeye.h"
 #include "pin_cmd.h"
 #include "prefetcher.h"
 #include "proc_stats.h"
@@ -172,6 +173,10 @@ BaseCache* BuildCacheBank(Config& config, const string& prefix, g_string& name, 
         // add your SRRIP construction code here
         rp = new SRRIPReplPolicy(numLines, rpvMax);
 
+    } else if (replType == "Hawkeye") {
+        uint32_t rpvMax = config.get<uint32_t>(prefix + "repl.rpvMax", 3);
+
+        rp = new HawkeyeReplPolicy(numLines, rpvMax);
     } else if (replType == "WayPart" || replType == "Vantage" || replType == "IdealLRUPart") {
         if (replType == "WayPart" && arrayType != "SetAssoc") panic("WayPart replacement requires SetAssoc array");
 
