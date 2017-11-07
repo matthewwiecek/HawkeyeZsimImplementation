@@ -146,7 +146,7 @@ class MESIBottomCC : public GlobAlloc {
 
         uint64_t processEviction(Address wbLineAddr, uint32_t lineId, bool lowerLevelWriteback, uint64_t cycle, uint32_t srcId);
 
-        uint64_t processAccess(Address lineAddr, uint32_t lineId, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags);
+        uint64_t processAccess(Address pc, Address lineAddr, uint32_t lineId, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags);
 
         void processWritebackOnAccess(Address lineAddr, uint32_t lineId, AccessType type);
 
@@ -222,7 +222,7 @@ class MESITopCC : public GlobAlloc {
 
         uint64_t processEviction(Address wbLineAddr, uint32_t lineId, bool* reqWriteback, uint64_t cycle, uint32_t srcId);
 
-        uint64_t processAccess(Address lineAddr, uint32_t lineId, AccessType type, uint32_t childId, bool haveExclusive,
+        uint64_t processAccess(Address pc, Address lineAddr, uint32_t lineId, AccessType type, uint32_t childId, bool haveExclusive,
                 MESIState* childState, bool* inducedWriteback, uint64_t cycle, uint32_t srcId, uint32_t flags);
 
         uint64_t processInval(Address lineAddr, uint32_t lineId, InvType type, bool* reqWriteback, uint64_t cycle, uint32_t srcId);
@@ -362,13 +362,13 @@ class MESICC : public CC {
                 uint32_t flags = req.flags & ~MemReq::PREFETCH; //always clear PREFETCH, this flag cannot propagate up
 
                 //if needed, fetch line or upgrade miss from upper level
-                respCycle = bcc->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, flags);
+                respCycle = bcc->processAccess(req.pc, req.lineAddr, lineId, req.type, startCycle, req.srcId, flags);
                 if (getDoneCycle) *getDoneCycle = respCycle;
                 if (!isPrefetch) { //prefetches only touch bcc; the demand request from the core will pull the line to lower level
                     //At this point, the line is in a good state w.r.t. upper levels
                     bool lowerLevelWriteback = false;
                     //change directory info, invalidate other children if needed, tell requester about its state
-                    respCycle = tcc->processAccess(req.lineAddr, lineId, req.type, req.childId, bcc->isExclusive(lineId), req.state,
+                    respCycle = tcc->processAccess(req.pc, req.lineAddr, lineId, req.type, req.childId, bcc->isExclusive(lineId), req.state,
                             &lowerLevelWriteback, respCycle, req.srcId, flags);
                     if (lowerLevelWriteback) {
                         //Essentially, if tcc induced a writeback, bcc may need to do an E->M transition to reflect that the cache now has dirty data
@@ -466,7 +466,7 @@ class MESITerminalCC : public CC {
             assert(lineId != -1);
             assert(!getDoneCycle);
             //if needed, fetch line or upgrade miss from upper level
-            uint64_t respCycle = bcc->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, req.flags);
+            uint64_t respCycle = bcc->processAccess(req.pc, req.lineAddr, lineId, req.type, startCycle, req.srcId, req.flags);
             //at this point, the line is in a good state w.r.t. upper levels
             return respCycle;
         }

@@ -77,9 +77,9 @@ void TimingCore::leave() {
     cRec.notifyLeave(curCycle);
 }
 
-void TimingCore::loadAndRecord(Address addr) {
+void TimingCore::loadAndRecord(Address pc, Address addr) {
     uint64_t startCycle = curCycle;
-    curCycle = l1d->load(addr, curCycle);
+    curCycle = l1d->load(pc, addr, curCycle);
     cRec.record(startCycle);
 }
 
@@ -96,7 +96,7 @@ void TimingCore::bblAndRecord(Address bblAddr, BblInfo* bblInfo) {
     Address endBblAddr = bblAddr + bblInfo->bytes;
     for (Address fetchAddr = bblAddr; fetchAddr < endBblAddr; fetchAddr+=(1 << lineBits)) {
         uint64_t startCycle = curCycle;
-        curCycle = l1i->load(fetchAddr, curCycle);
+        curCycle = l1i->load(0, fetchAddr, curCycle);
         cRec.record(startCycle);
     }
 }
@@ -106,8 +106,8 @@ InstrFuncPtrs TimingCore::GetFuncPtrs() {
     return {LoadAndRecordFunc, StoreAndRecordFunc, BblAndRecordFunc, BranchFunc, PredLoadAndRecordFunc, PredStoreAndRecordFunc, FPTR_ANALYSIS, {0}};
 }
 
-void TimingCore::LoadAndRecordFunc(THREADID tid, ADDRINT addr) {
-    static_cast<TimingCore*>(cores[tid])->loadAndRecord(addr);
+void TimingCore::LoadAndRecordFunc(THREADID tid, ADDRINT pc, ADDRINT addr) {
+    static_cast<TimingCore*>(cores[tid])->loadAndRecord(pc, addr);
 }
 
 void TimingCore::StoreAndRecordFunc(THREADID tid, ADDRINT addr) {
@@ -126,11 +126,10 @@ void TimingCore::BblAndRecordFunc(THREADID tid, ADDRINT bblAddr, BblInfo* bblInf
     }
 }
 
-void TimingCore::PredLoadAndRecordFunc(THREADID tid, ADDRINT addr, BOOL pred) {
-    if (pred) static_cast<TimingCore*>(cores[tid])->loadAndRecord(addr);
+void TimingCore::PredLoadAndRecordFunc(THREADID tid, ADDRINT pc, ADDRINT addr, BOOL pred) {
+    if (pred) static_cast<TimingCore*>(cores[tid])->loadAndRecord(pc, addr);
 }
 
 void TimingCore::PredStoreAndRecordFunc(THREADID tid, ADDRINT addr, BOOL pred) {
     if (pred) static_cast<TimingCore*>(cores[tid])->storeAndRecord(addr);
 }
-

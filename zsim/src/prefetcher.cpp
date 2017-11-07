@@ -138,7 +138,7 @@ uint64_t StreamPrefetcher::access(MemReq& req) {
 
                 if (prefetchPos < 64 && !e.valid[prefetchPos]) {
                     MESIState state = I;
-                    MemReq pfReq = {req.lineAddr + prefetchPos - pos, GETS, req.childId, &state, reqCycle, req.childLock, state, req.srcId, MemReq::PREFETCH};
+                    MemReq pfReq = {req.pc, req.lineAddr + prefetchPos - pos, GETS, req.childId, &state, reqCycle, req.childLock, state, req.srcId, MemReq::PREFETCH};
                     uint64_t pfRespCycle = parent->access(pfReq);  // FIXME, might segfault
                     e.valid[prefetchPos] = true;
                     e.times[prefetchPos].fill(reqCycle, pfRespCycle);
@@ -186,5 +186,3 @@ uint64_t StreamPrefetcher::access(MemReq& req) {
 uint64_t StreamPrefetcher::invalidate(const InvReq& req) {
     return child->invalidate(req);
 }
-
-

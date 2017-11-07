@@ -62,9 +62,9 @@ InstrFuncPtrs NullCore::GetFuncPtrs() {
     return {LoadFunc, StoreFunc, BblFunc, BranchFunc, PredLoadFunc, PredStoreFunc, FPTR_ANALYSIS, {0}};
 }
 
-void NullCore::LoadFunc(THREADID tid, ADDRINT addr) {}
+void NullCore::LoadFunc(THREADID tid, ADDRINT pc, ADDRINT addr) {}
 void NullCore::StoreFunc(THREADID tid, ADDRINT addr) {}
-void NullCore::PredLoadFunc(THREADID tid, ADDRINT addr, BOOL pred) {}
+void NullCore::PredLoadFunc(THREADID tid, ADDRINT pc, ADDRINT addr, BOOL pred) {}
 void NullCore::PredStoreFunc(THREADID tid, ADDRINT addr, BOOL pred) {}
 
 void NullCore::BblFunc(THREADID tid, ADDRINT bblAddr, BblInfo* bblInfo) {
@@ -83,4 +83,3 @@ void NullCore::BblFunc(THREADID tid, ADDRINT bblAddr, BblInfo* bblInfo) {
         if (newCid != cid) break; /*context-switch*/
     }
 }
-

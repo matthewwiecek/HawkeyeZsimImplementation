@@ -14,7 +14,7 @@ class HawkeyeReplPolicy : public ReplPolicy {
 
 
         bool optGenUpdate(MemReq* req) {
-          Address address = req.lineAddr;
+          //Address address = req.lineAddr;
           //other stuff here
           return false;
         }
@@ -27,6 +27,7 @@ class HawkeyeReplPolicy : public ReplPolicy {
           {
             //fill in
           }
+          return false;
         }
 
 

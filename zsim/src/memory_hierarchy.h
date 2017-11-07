@@ -76,6 +76,7 @@ inline bool IsPut(AccessType t) { return t == PUTS || t == PUTX; }
 
 /* Memory request */
 struct MemReq {
+    Address pc;
     Address lineAddr;
     AccessType type;
     uint32_t childId;
