@@ -19,6 +19,8 @@ class HawkeyeReplPolicy : public ReplPolicy {
           return false;
         }
 
+        //True: Cache-friendly
+        //False: Cache-averse
         bool predictor(MemReq* req) {
           if(optGenUpdate(req)) {
             //fill in
@@ -29,7 +31,6 @@ class HawkeyeReplPolicy : public ReplPolicy {
           }
           return false;
         }
-
 
     public:
         // add member methods here, refer to repl_policies.h
@@ -46,21 +47,27 @@ class HawkeyeReplPolicy : public ReplPolicy {
             justReplaced = -1;
           }
           else {
-            array[id] = 0;
+            if (predictor(req)) {
+              array[id] = 0;
+            } else {
+              array[id] = maxRPv - 1;
+            }          
           }
         }
 
         void replaced(uint32_t id) {
-          array[id] = maxRpv - 1;
+          if (predictor(req)) {
+            array[id] = 0;
+          } else {
+            array[id] = maxRpv - 1;
+          }
           justReplaced = id;
         }
 
         template <typename C> uint32_t rank(const MemReq* req, C cands) {
-            while(true)
-            {
+            while(true) {
               for (auto ci = cands.begin(); ci != cands.end(); ci.inc()) {
-                  if(array[*ci] >= maxRpv)
-                  {
+                  if(array[*ci] >= maxRpv) {
                     return *ci;
                   }
               }
