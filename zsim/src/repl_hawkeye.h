@@ -11,9 +11,13 @@ class HawkeyeReplPolicy : public ReplPolicy {
         uint32_t numLines;
         const uint32_t maxRpv;
         int64_t justReplaced = -1;
+        uint8_t* pc_array;
+        const uint32_t predBits = 3;
+        const uint32_t pcHashSize = 13;
+        hash<Address> addr_hash;
 
 
-        bool optGenUpdate(MemReq* req) {
+        bool optGenUpdate(const MemReq* req) {
           //Address address = req.lineAddr;
           //other stuff here
           return false;
@@ -21,47 +25,47 @@ class HawkeyeReplPolicy : public ReplPolicy {
 
         //True: Cache-friendly
         //False: Cache-averse
-        bool predictor(MemReq* req) {
-          if(optGenUpdate(req)) {
-            //fill in
+        bool predictor(const MemReq* req) {
+          Address hashedPc = (Address) ((unsigned long) addr_hash(req->pc) % (unsigned long) pow(2, pcHashSize));
+          if (optGenUpdate(req)) {
+            if (pc_array[hashedPc] < pow(2, predBits) - 1) {
+              pc_array[hashedPc]++;
+            }
+          } else {
+            if (pc_array[hashedPc] > 0) {
+              pc_array[hashedPc]--;
+            }
           }
-          else
-          {
-            //fill in
+
+          if (pc_array[hashedPc] > pow(2, predBits - 1)) {
+            return true;
+          } else {
+            return false;
           }
-          return false;
         }
 
     public:
         // add member methods here, refer to repl_policies.h
         HawkeyeReplPolicy(uint32_t _numLines, uint32_t _maxRpv) : array(0), numLines(_numLines), maxRpv(_maxRpv) {
           array = gm_calloc<uint32_t>(numLines);
+          pc_array = gm_calloc<uint8_t>(pow(2, pcHashSize) - 1);
         }
 
         ~HawkeyeReplPolicy() {
           gm_free(array);
+          gm_free(pc_array);
         }
 
         void update(uint32_t id, const MemReq* req) {
-          if(id == justReplaced) {
-            justReplaced = -1;
-          }
-          else {
-            if (predictor(req)) {
-              array[id] = 0;
-            } else {
-              array[id] = maxRPv - 1;
-            }          
-          }
-        }
-
-        void replaced(uint32_t id) {
           if (predictor(req)) {
             array[id] = 0;
           } else {
             array[id] = maxRpv - 1;
           }
-          justReplaced = id;
+        }
+
+        void replaced(uint32_t id) {
+          //let update handle it, policy is the same
         }
 
         template <typename C> uint32_t rank(const MemReq* req, C cands) {
