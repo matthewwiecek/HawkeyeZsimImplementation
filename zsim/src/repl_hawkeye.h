@@ -48,7 +48,7 @@ class HawkeyeReplPolicy : public ReplPolicy {
         // add member methods here, refer to repl_policies.h
         HawkeyeReplPolicy(uint32_t _numLines, uint32_t _maxRpv) : array(0), numLines(_numLines), maxRpv(_maxRpv) {
           array = gm_calloc<uint32_t>(numLines);
-          pc_array = gm_calloc<uint8_t>(pow(2, pcHashSize) - 1);
+          pc_array = gm_calloc<uint8_t>(pow(2, pcHashSize));
         }
 
         ~HawkeyeReplPolicy() {
