@@ -3,10 +3,26 @@
 
 #include "repl_policies.h"
 
+
+struct occVector_element {
+  Address address;
+  uint8_t entry;
+
+  static int lastIndexOf(occVector_element* occVector, Address address, size_t size, size_t front, size_t numLines) {
+    for (size_t i = front; i != (front+1)%size; i = (i-1)%size) {
+      if (occVector[i].address == address) {
+        return i;
+      } else if (occVector[i].entry >= numLines) {
+        return -1;
+      }
+    }
+    return -1;
+  }
+};
+
 // Hawkeye Replacement Policy
 class HawkeyeReplPolicy : public ReplPolicy {
     protected:
-        // add class member variables here
         uint32_t* array;
         uint32_t numLines;
         const uint32_t maxRpv;
@@ -16,10 +32,28 @@ class HawkeyeReplPolicy : public ReplPolicy {
         const uint32_t pcHashSize = 13;
         hash<Address> addr_hash;
 
+        occVector_element* occVector;
+        uint32_t occVector_size;
+        uint32_t occVector_front = 0;
 
         bool optGenUpdate(const MemReq* req) {
-          //Address address = req.lineAddr;
-          //other stuff here
+          Address address = req->pc;
+
+
+          int lastIndex = occVector_element::lastIndexOf(occVector, address, occVector_size, occVector_front, numLines);
+          if (lastIndex != -1) {
+            for (int i = occVector_front; i != lastIndex; i = (i-1)%occVector_size) {
+              occVector[i].entry++;
+            }
+            return true;
+          }
+
+          occVector_front++;
+          occVector_front = occVector_front % occVector_size;
+
+          occVector[occVector_front].entry = 0;
+          occVector[occVector_front].address = address;
+
           return false;
         }
 
@@ -49,11 +83,16 @@ class HawkeyeReplPolicy : public ReplPolicy {
         HawkeyeReplPolicy(uint32_t _numLines, uint32_t _maxRpv) : array(0), numLines(_numLines), maxRpv(_maxRpv) {
           array = gm_calloc<uint32_t>(numLines);
           pc_array = gm_calloc<uint8_t>(pow(2, pcHashSize));
+          occVector_size = 8*numLines;
+          occVector = gm_calloc<occVector_element>(occVector_size);
+
+          //allocate address array
         }
 
         ~HawkeyeReplPolicy() {
           gm_free(array);
           gm_free(pc_array);
+          gm_free(occVector);
         }
 
         void update(uint32_t id, const MemReq* req) {
