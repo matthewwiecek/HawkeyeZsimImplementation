@@ -1,9 +1,0 @@
-#!/bin/sh
-
-./hw4runscript SPEC xalan SRRIP
-./hw4runscript SPEC xalan LRU
-./hw4runscript SPEC xalan LFU
-
-./hw4runscript SPEC calculix LRU
-./hw4runscript SPEC calculix LFU
-./hw4runscript SPEC calculix SRRIP

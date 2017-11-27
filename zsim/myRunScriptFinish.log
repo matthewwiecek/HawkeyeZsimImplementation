@@ -1,7 +1,0 @@
-nohup: ignoring input
-./build/opt/zsim configs/hw4/SRRIP/xalan.cfg > outputs/hw4/SRRIP/xalan/xalan.log 2>&1
-./build/opt/zsim configs/hw4/LRU/xalan.cfg > outputs/hw4/LRU/xalan/xalan.log 2>&1
-./build/opt/zsim configs/hw4/LFU/xalan.cfg > outputs/hw4/LFU/xalan/xalan.log 2>&1
-./build/opt/zsim configs/hw4/LRU/calculix.cfg > outputs/hw4/LRU/calculix/calculix.log 2>&1
-./build/opt/zsim configs/hw4/LFU/calculix.cfg > outputs/hw4/LFU/calculix/calculix.log 2>&1
-./build/opt/zsim configs/hw4/SRRIP/calculix.cfg > outputs/hw4/SRRIP/calculix/calculix.log 2>&1
