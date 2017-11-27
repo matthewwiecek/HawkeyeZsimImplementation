@@ -9,7 +9,7 @@ struct occVector_element {
   uint8_t entry;
 
   static int lastIndexOf(occVector_element* occVector, Address address, size_t size, size_t front, size_t numLines) {
-    for (size_t i = front; i != (front+1)%size; i = (i-1)%size) {
+    for (size_t i = front; i != abs((front+1)%size); i = abs((i-1)%size)) {
       if (occVector[i].address == address) {
         return i;
       } else if (occVector[i].entry >= numLines) {
@@ -42,14 +42,14 @@ class HawkeyeReplPolicy : public ReplPolicy {
 
           int lastIndex = occVector_element::lastIndexOf(occVector, address, occVector_size, occVector_front, numLines);
           if (lastIndex != -1) {
-            for (int i = occVector_front; i != lastIndex; i = (i-1)%occVector_size) {
+            for (int i = occVector_front; i != lastIndex; i = abs((i-1)%occVector_size)) {
               occVector[i].entry++;
             }
             return true;
           }
 
           occVector_front++;
-          occVector_front = occVector_front % occVector_size;
+          occVector_front = abs(occVector_front % occVector_size);
 
           occVector[occVector_front].entry = 0;
           occVector[occVector_front].address = address;
