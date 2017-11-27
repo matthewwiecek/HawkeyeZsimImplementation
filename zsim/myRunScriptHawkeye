@@ -1,0 +1,25 @@
+#!/bin/sh
+
+./hw4runscript SPEC bzip2 Hawkeye
+./hw4runscript SPEC gcc Hawkeye
+./hw4runscript SPEC mcf Hawkeye
+./hw4runscript SPEC hmmer Hawkeye
+./hw4runscript SPEC sjeng Hawkeye
+./hw4runscript SPEC libquantum Hawkeye
+./hw4runscript SPEC xalancbmk Hawkeye
+./hw4runscript SPEC milc Hawkeye
+./hw4runscript SPEC cactusADM Hawkeye
+./hw4runscript SPEC leslie3d Hawkeye
+./hw4runscript SPEC namd Hawkeye
+./hw4runscript SPEC soplex Hawkeye
+./hw4runscript SPEC calculiz Hawkeye
+./hw4runscript SPEC lbm Hawkeye
+./hw4runscript PARSEC blackscholes Hawkeye
+./hw4runscript PARSEC bodytrack Hawkeye
+./hw4runscript PARSEC canneal Hawkeye
+./hw4runscript PARSEC dedup Hawkeye
+./hw4runscript PARSEC fluidanimate Hawkeye
+./hw4runscript PARSEC freqmine Hawkeye
+./hw4runscript PARSEC streamcluster Hawkeye
+./hw4runscript PARSEC swaptions Hawkeye
+./hw4runscript PARSEC x264 Hawkeye

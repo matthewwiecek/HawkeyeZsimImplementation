@@ -1,0 +1,27 @@
+nohup: ignoring input
+./build/opt/zsim configs/hw4/LFU/blackscholes_8c_simlarge.cfg > outputs/hw4/LFU/blackscholes_8c_simlarge/blackscholes.log 2>&1
+./build/opt/zsim configs/hw4/LRU/blackscholes_8c_simlarge.cfg > outputs/hw4/LRU/blackscholes_8c_simlarge/blackscholes.log 2>&1
+./build/opt/zsim configs/hw4/LFU/bodytrack_8c_simlarge.cfg > outputs/hw4/LFU/bodytrack_8c_simlarge/bodytrack.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/bzip2.cfg > outputs/hw4/SRRIP/bzip2/bzip2.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/gcc.cfg > outputs/hw4/SRRIP/gcc/gcc.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/mcf.cfg > outputs/hw4/SRRIP/mcf/mcf.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/hmmer.cfg > outputs/hw4/SRRIP/hmmer/hmmer.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/sjeng.cfg > outputs/hw4/SRRIP/sjeng/sjeng.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/libquantum.cfg > outputs/hw4/SRRIP/libquantum/libquantum.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/xalancbmk.cfg > outputs/hw4/SRRIP/xalancbmk/xalancbmk.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/milc.cfg > outputs/hw4/SRRIP/milc/milc.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/cactusADM.cfg > outputs/hw4/SRRIP/cactusADM/cactusADM.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/leslie3d.cfg > outputs/hw4/SRRIP/leslie3d/leslie3d.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/namd.cfg > outputs/hw4/SRRIP/namd/namd.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/soplex.cfg > outputs/hw4/SRRIP/soplex/soplex.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/calculiz.cfg > outputs/hw4/SRRIP/calculiz/calculiz.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/lbm.cfg > outputs/hw4/SRRIP/lbm/lbm.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/blackscholes_8c_simlarge.cfg > outputs/hw4/SRRIP/blackscholes_8c_simlarge/blackscholes.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/bodytrack_8c_simlarge.cfg > outputs/hw4/SRRIP/bodytrack_8c_simlarge/bodytrack.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/canneal_8c_simlarge.cfg > outputs/hw4/SRRIP/canneal_8c_simlarge/canneal.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/dedup_8c_simlarge.cfg > outputs/hw4/SRRIP/dedup_8c_simlarge/dedup.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/fluidanimate_8c_simlarge.cfg > outputs/hw4/SRRIP/fluidanimate_8c_simlarge/fluidanimate.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/freqmine_8c_simlarge.cfg > outputs/hw4/SRRIP/freqmine_8c_simlarge/freqmine.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/streamcluster_8c_simlarge.cfg > outputs/hw4/SRRIP/streamcluster_8c_simlarge/streamcluster.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/swaptions_8c_simlarge.cfg > outputs/hw4/SRRIP/swaptions_8c_simlarge/swaptions.log 2>&1
+./build/opt/zsim configs/hw4/SRRIP/x264_8c_simlarge.cfg > outputs/hw4/SRRIP/x264_8c_simlarge/x264.log 2>&1
