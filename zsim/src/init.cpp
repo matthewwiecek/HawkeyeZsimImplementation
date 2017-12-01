@@ -176,7 +176,7 @@ BaseCache* BuildCacheBank(Config& config, const string& prefix, g_string& name, 
     } else if (replType == "Hawkeye") {
         uint32_t rpvMax = config.get<uint32_t>(prefix + "repl.rpvMax", 3);
 
-        rp = new HawkeyeReplPolicy(numLines, rpvMax);
+        rp = new HawkeyeReplPolicy(numLines, lineSize, rpvMax);
     } else if (replType == "WayPart" || replType == "Vantage" || replType == "IdealLRUPart") {
         if (replType == "WayPart" && arrayType != "SetAssoc") panic("WayPart replacement requires SetAssoc array");
 

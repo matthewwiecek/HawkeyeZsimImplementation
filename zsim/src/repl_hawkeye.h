@@ -30,6 +30,7 @@ class HawkeyeReplPolicy : public ReplPolicy {
         uint8_t* pc_array;
         const uint32_t predBits = 3;
         const uint32_t pcHashSize = 13;
+		const unsigned int numOffsetBits;
         hash<Address> addr_hash;
 
         occVector_element* occVector;
@@ -37,7 +38,7 @@ class HawkeyeReplPolicy : public ReplPolicy {
         uint32_t occVector_front = 0;
 
         bool optGenUpdate(const MemReq* req) {
-          Address address = req->pc;
+          Address address = req->lineAddr >> numOffsetBits;
 
 
           int lastIndex = occVector_element::lastIndexOf(occVector, address, occVector_size, occVector_front, numLines);
@@ -80,12 +81,12 @@ class HawkeyeReplPolicy : public ReplPolicy {
 
     public:
         // add member methods here, refer to repl_policies.h
-        HawkeyeReplPolicy(uint32_t _numLines, uint32_t _maxRpv) : array(0), numLines(_numLines), maxRpv(_maxRpv) {
+        HawkeyeReplPolicy(uint32_t _numLines, uint32_t lineSize, uint32_t _maxRpv) : array(0), numLines(_numLines), maxRpv(_maxRpv) {
           array = gm_calloc<uint32_t>(numLines);
           pc_array = gm_calloc<uint8_t>(pow(2, pcHashSize));
           occVector_size = 8*numLines;
           occVector = gm_calloc<occVector_element>(occVector_size);
-
+		  numOffsetBits = log2(lineSize/8);
           //allocate address array
         }
 
