@@ -124,8 +124,7 @@ g_vector<g_string> PinCmd::getPinCmdArgs(uint32_t procIdx) {
     return res;
 }
 
-//g_vector<g_string> PinCmd::getFullCmdArgs(uint32_t procIdx, const char** inputFile) {
-g_vector<g_string> PinCmd::getFullCmdArgs(uint32_t procIdx, g_string &inputFile) {
+g_vector<g_string> PinCmd::getFullCmdArgs(uint32_t procIdx, const char** inputFile) {
     assert(procIdx < procInfo.size()); //must be one of the topmost processes
     g_vector<g_string> res = getPinCmdArgs(procIdx);
 
@@ -154,17 +153,7 @@ g_vector<g_string> PinCmd::getFullCmdArgs(uint32_t procIdx, g_string &inputFile)
     wordfree(&p);
 
     //Input redirect
-    inputFile = procInfo[procIdx].input;
-    if (!inputFile.empty()) {
-        wordexp(inputFile.c_str(), &p, 0);
-        inputFile.clear();
-        uint32_t i;
-        for (i = 0; i < p.we_wordc-1; i++) {
-            inputFile += p.we_wordv[i] + g_string(" ");
-        }
-        inputFile += p.we_wordv[i];
-    }
-    //*inputFile = (procInfo[procIdx].input == "")? nullptr : procInfo[procIdx].input.c_str();
+    *inputFile = (procInfo[procIdx].input == "")? nullptr : procInfo[procIdx].input.c_str();
     return res;
 }
 

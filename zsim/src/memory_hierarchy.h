@@ -76,7 +76,6 @@ inline bool IsPut(AccessType t) { return t == PUTS || t == PUTX; }
 
 /* Memory request */
 struct MemReq {
-    Address pc;
     Address lineAddr;
     AccessType type;
     uint32_t childId;
@@ -100,6 +99,9 @@ struct MemReq {
         PREFETCH      = (1<<5), //Prefetch GETS access. Only set at level where prefetch is issued; handled early in MESICC
     };
     uint32_t flags;
+
+    // load/store PC
+    Address pc;
 
     inline void set(Flag f) {flags |= f;}
     inline bool is (Flag f) const {return flags & f;}

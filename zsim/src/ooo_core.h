@@ -368,11 +368,6 @@ class CycleQueue {
 
 struct BblInfo;
 
-struct LoadAddr {
-  Address pc;
-  Address addr;
-};
-
 class OOOCore : public Core {
     private:
         FilterCache* l1i;
@@ -386,8 +381,10 @@ class OOOCore : public Core {
         BblInfo* prevBbl;
 
         //Record load and store addresses
-        LoadAddr loadAddrs[256];
+        Address loadAddrs[256];
         Address storeAddrs[256];
+        Address loadPcs[256];
+        Address storePcs[256];
         uint32_t loads;
         uint32_t stores;
 
@@ -473,8 +470,8 @@ class OOOCore : public Core {
         inline void useA3forBranchPred() {branchPred.useA3();}
 
     private:
-        inline void load(Address pc, Address addr);
-        inline void store(Address addr);
+        inline void load(Address addr, Address pc);
+        inline void store(Address addr, Address pc);
 
         /* NOTE: Analysis routines cannot touch curCycle directly, must use
          * advance() for long jumps or insWindow.advancePos() for 1-cycle
@@ -494,10 +491,10 @@ class OOOCore : public Core {
 
         inline void bbl(Address bblAddr, BblInfo* bblInfo);
 
-        static void LoadFunc(THREADID tid, ADDRINT pc, ADDRINT addr);
-        static void StoreFunc(THREADID tid, ADDRINT addr);
-        static void PredLoadFunc(THREADID tid, ADDRINT pc, ADDRINT addr, BOOL pred);
-        static void PredStoreFunc(THREADID tid, ADDRINT addr, BOOL pred);
+        static void LoadFunc(THREADID tid, ADDRINT loadPc, ADDRINT addr);
+        static void StoreFunc(THREADID tid, ADDRINT storePc, ADDRINT addr);
+        static void PredLoadFunc(THREADID tid, ADDRINT predLoadPc, ADDRINT addr, BOOL pred);
+        static void PredStoreFunc(THREADID tid, ADDRINT predStorePc, ADDRINT addr, BOOL pred);
         static void BblFunc(THREADID tid, ADDRINT bblAddr, BblInfo* bblInfo);
         static void BranchFunc(THREADID tid, ADDRINT pc, BOOL taken, ADDRINT takenNpc, ADDRINT notTakenNpc);
 } ATTR_LINE_ALIGNED;  // Take up an int number of cache lines
