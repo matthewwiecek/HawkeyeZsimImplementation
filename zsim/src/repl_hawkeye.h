@@ -4,16 +4,24 @@
 #include "repl_policies.h"
 
 
+unsigned long modulo(long i, long m) {
+	long result = i % m;
+	if (result < 0) {
+		result += m;
+	}
+	return result;
+}
+
 struct occVector_element {
   Address address;
   uint8_t entry;
 
   static int lastIndexOf(occVector_element* occVector, Address address, size_t size, size_t front, size_t numLines) {
-    for (size_t i = front; i != abs((front+1)%size); i = abs((i-1)%size)) {
-      if (occVector[i].address == address) {
-        return i;
-      } else if (occVector[i].entry >= numLines) {
+    for (size_t i = front; i != modulo(front+1,size); i = modulo(i-1,size)) {
+      if (occVector[i].entry >= numLines) {
         return -1;
+      } else if (occVector[i].address == address) {
+        return i;
       }
     }
     return -1;
@@ -38,25 +46,26 @@ class HawkeyeReplPolicy : public ReplPolicy {
         uint32_t occVector_front = 0;
 
         bool optGenUpdate(const MemReq* req) {
-          Address address = req->lineAddr >> numOffsetBits;
+		  bool toReturn = false;
+		  Address address = req->lineAddr >> numOffsetBits;
 
+		  int lastIndex = occVector_element::lastIndexOf(occVector, address, occVector_size, occVector_front, numLines);
+		  if (lastIndex != -1) {
+			  cout << "Last Index: " << lastIndex << " i != " << modulo(lastIndex-1, occVector_size) << endl;
+			for (int i = modulo(occVector_front-1, occVector_size); i != modulo(lastIndex-1,occVector_size); i = modulo(i-1,occVector_size)) {
+			  occVector[i].entry++;
+			}
+			toReturn = true;
+		  }
+		  
+		  occVector[occVector_front].entry = 0;
+		  occVector[occVector_front].address = address;
 
-          int lastIndex = occVector_element::lastIndexOf(occVector, address, occVector_size, occVector_front, numLines);
-          if (lastIndex != -1) {
-            for (int i = occVector_front; i != lastIndex; i = abs((i-1)%occVector_size)) {
-              occVector[i].entry++;
-            }
-            return true;
-          }
+		  occVector_front++;
+		  occVector_front = modulo(occVector_front, occVector_size);
 
-          occVector_front++;
-          occVector_front = abs(occVector_front % occVector_size);
-
-          occVector[occVector_front].entry = 0;
-          occVector[occVector_front].address = address;
-
-          return false;
-        }
+		  return toReturn;
+		}
 
         //True: Cache-friendly
         //False: Cache-averse
