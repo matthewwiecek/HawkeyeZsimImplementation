@@ -51,7 +51,6 @@ class HawkeyeReplPolicy : public ReplPolicy {
 
 		  int lastIndex = occVector_element::lastIndexOf(occVector, address, occVector_size, occVector_front, numLines);
 		  if (lastIndex != -1) {
-			  cout << "Last Index: " << lastIndex << " i != " << modulo(lastIndex-1, occVector_size) << endl;
 			for (unsigned int i = modulo(occVector_front-1, occVector_size); i != modulo(lastIndex-1,occVector_size); i = modulo(i-1,occVector_size)) {
 			  occVector[i].entry++;
 			}
