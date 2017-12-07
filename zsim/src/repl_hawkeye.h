@@ -46,6 +46,7 @@ class HawkeyeReplPolicy : public ReplPolicy {
         const uint32_t predBits = 3;
         const uint32_t pcHashSize = 13;
 				const unsigned int numOffsetBits;
+				const unsigned int numIndexBits;
 				const unsigned int totalNonTagBits;
 				const unsigned int numWays;
         hash<Address> addr_hash;
@@ -75,7 +76,7 @@ class HawkeyeReplPolicy : public ReplPolicy {
 				}
 
 				bool optGenUpdate(const MemReq* req) {
-					unsigned int line = (req->lineAddr >> numOffsetBits) & ((1<<totalNonTagBits)-1);
+					unsigned int line = (req->lineAddr >> numOffsetBits) & ((1<<numIndexBits)-1);
 					return _optGenUpdate(req, occVector[line]);
 				}
 
@@ -103,10 +104,10 @@ class HawkeyeReplPolicy : public ReplPolicy {
 		    public:
 		        // add member methods here, refer to repl_policies.h
 		        HawkeyeReplPolicy(uint32_t _numLines, uint32_t lineSize, uint32_t _maxRpv, uint32_t _numWays) : array(0), numLines(_numLines), maxRpv(_maxRpv), numOffsetBits(ceil(log2(lineSize/8))),
-					totalNonTagBits(numOffsetBits+ceil(log2(numLines))), numWays(_numWays) {
+					numIndexBits(ceil(log2(numLines))), totalNonTagBits(numOffsetBits+numIndexBits), numWays(_numWays) {
 		          array = gm_calloc<uint32_t>(numLines);
 		          pc_array = gm_calloc<uint8_t>(pow(2, pcHashSize));
-		          occVector = gm_calloc<occVect>(numLines);
+		          occVector = gm_calloc<occVect>(pow(2,numIndexBits));
 		          //allocate address array
 		        }
 
