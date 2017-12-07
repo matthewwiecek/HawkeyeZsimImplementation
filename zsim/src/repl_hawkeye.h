@@ -28,6 +28,13 @@ struct occVector_element {
   }
 };
 
+const int MAX_WAYS = 16;
+const int occVector_size = 8*MAX_WAYS;
+struct occVect {
+	occVector_element element[occVector_size];
+	uint32_t front = 0;
+};
+
 // Hawkeye Replacement Policy
 class HawkeyeReplPolicy : public ReplPolicy {
     protected:
@@ -39,31 +46,36 @@ class HawkeyeReplPolicy : public ReplPolicy {
         const uint32_t predBits = 3;
         const uint32_t pcHashSize = 13;
 		const unsigned int numOffsetBits;
+		const unsigned int totalNonTagBits;
         hash<Address> addr_hash;
 
-        occVector_element* occVector;
+        occVect* occVector;
         uint32_t occVector_size;
-        uint32_t occVector_front = 0;
 
-        bool optGenUpdate(const MemReq* req) {
+		bool _optGenUpdate(const MemReq* req, occVect& occVector) {
 		  bool toReturn = false;
-		  Address address = req->lineAddr >> numOffsetBits;
+		  Address address = req->lineAddr >> totalNonTagBits;
 
-		  int lastIndex = occVector_element::lastIndexOf(occVector, address, occVector_size, occVector_front, numLines);
+		  int lastIndex = occVector_element::lastIndexOf(occVector.element, address, occVector_size, occVector.front, numWays);
 		  if (lastIndex != -1) {
-			for (unsigned int i = modulo(occVector_front-1, occVector_size); i != modulo(lastIndex-1,occVector_size); i = modulo(i-1,occVector_size)) {
-			  occVector[i].entry++;
+			for (int i = modulo(occVector.front-1, occVector_size); i != modulo(lastIndex-1,occVector_size); i = modulo(i-1,occVector_size)) {
+			  occVector.element[i].entry++;
 			}
 			toReturn = true;
 		  }
 		  
-		  occVector[occVector_front].entry = 0;
-		  occVector[occVector_front].address = address;
+		  occVector.element[occVector.front].entry = 0;
+		  occVector.element[occVector.front].address = address;
 
-		  occVector_front++;
-		  occVector_front = modulo(occVector_front, occVector_size);
+		  occVector.front++;
+		  occVector.front = modulo(occVector.front, occVector_size);
 
 		  return toReturn;
+		}
+		
+		bool optGenUpdate(const MemReq* req) {
+			unsigned int line = (req->lineAddr >> numOffsetBits) & ((1<<totalNonTagBits)-1);
+			return _optGenUpdate(req, occVector[line]);
 		}
 
         //True: Cache-friendly
@@ -89,11 +101,11 @@ class HawkeyeReplPolicy : public ReplPolicy {
 
     public:
         // add member methods here, refer to repl_policies.h
-        HawkeyeReplPolicy(uint32_t _numLines, uint32_t lineSize, uint32_t _maxRpv) : array(0), numLines(_numLines), maxRpv(_maxRpv), numOffsetBits(log2(lineSize/8)) {
+        HawkeyeReplPolicy(uint32_t _numLines, uint32_t lineSize, uint32_t _maxRpv) : array(0), numLines(_numLines), maxRpv(_maxRpv), numOffsetBits(ciel(log2(lineSize/8))), 
+			totalNonTagBits(numOffsetBits+ciel(log2(numLines))){
           array = gm_calloc<uint32_t>(numLines);
           pc_array = gm_calloc<uint8_t>(pow(2, pcHashSize));
-          occVector_size = 8*numLines;
-          occVector = gm_calloc<occVector_element>(occVector_size);
+          occVector = gm_calloc<occVect>(numLines);
           //allocate address array
         }
 
