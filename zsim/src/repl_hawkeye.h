@@ -45,100 +45,101 @@ class HawkeyeReplPolicy : public ReplPolicy {
         uint8_t* pc_array;
         const uint32_t predBits = 3;
         const uint32_t pcHashSize = 13;
-		const unsigned int numOffsetBits;
-		const unsigned int totalNonTagBits;
+				const unsigned int numOffsetBits;
+				const unsigned int totalNonTagBits;
+				const unsigned int numWays;
         hash<Address> addr_hash;
 
         occVect* occVector;
         uint32_t occVector_size;
 
-		bool _optGenUpdate(const MemReq* req, occVect& occVector) {
-		  bool toReturn = false;
-		  Address address = req->lineAddr >> totalNonTagBits;
+				bool _optGenUpdate(const MemReq* req, occVect& occVector) {
+				  bool toReturn = false;
+				  Address address = req->lineAddr >> totalNonTagBits;
 
-		  int lastIndex = occVector_element::lastIndexOf(occVector.element, address, occVector_size, occVector.front, numWays);
-		  if (lastIndex != -1) {
-			for (int i = modulo(occVector.front-1, occVector_size); i != modulo(lastIndex-1,occVector_size); i = modulo(i-1,occVector_size)) {
-			  occVector.element[i].entry++;
-			}
-			toReturn = true;
-		  }
-		  
-		  occVector.element[occVector.front].entry = 0;
-		  occVector.element[occVector.front].address = address;
+				  int lastIndex = occVector_element::lastIndexOf(occVector.element, address, occVector_size, occVector.front, numWays);
+				  if (lastIndex != -1) {
+					for (unsigned int i = modulo(occVector.front-1, occVector_size); i != modulo(lastIndex-1,occVector_size); i = modulo(i-1,occVector_size)) {
+					  occVector.element[i].entry++;
+					}
+					toReturn = true;
+				  }
 
-		  occVector.front++;
-		  occVector.front = modulo(occVector.front, occVector_size);
+				  occVector.element[occVector.front].entry = 0;
+				  occVector.element[occVector.front].address = address;
 
-		  return toReturn;
-		}
-		
-		bool optGenUpdate(const MemReq* req) {
-			unsigned int line = (req->lineAddr >> numOffsetBits) & ((1<<totalNonTagBits)-1);
-			return _optGenUpdate(req, occVector[line]);
-		}
+				  occVector.front++;
+				  occVector.front = modulo(occVector.front, occVector_size);
 
-        //True: Cache-friendly
-        //False: Cache-averse
-        bool predictor(const MemReq* req) {
-          Address hashedPc = (Address) ((unsigned long) addr_hash(req->pc) % (unsigned long) pow(2, pcHashSize));
-          if (optGenUpdate(req)) {
-            if (pc_array[hashedPc] < pow(2, predBits) - 1) {
-              pc_array[hashedPc]++;
-            }
-          } else {
-            if (pc_array[hashedPc] > 0) {
-              pc_array[hashedPc]--;
-            }
-          }
+				  return toReturn;
+				}
 
-          if (pc_array[hashedPc] > pow(2, predBits - 1)) {
-            return true;
-          } else {
-            return false;
-          }
-        }
+				bool optGenUpdate(const MemReq* req) {
+					unsigned int line = (req->lineAddr >> numOffsetBits) & ((1<<totalNonTagBits)-1);
+					return _optGenUpdate(req, occVector[line]);
+				}
 
-    public:
-        // add member methods here, refer to repl_policies.h
-        HawkeyeReplPolicy(uint32_t _numLines, uint32_t lineSize, uint32_t _maxRpv) : array(0), numLines(_numLines), maxRpv(_maxRpv), numOffsetBits(ciel(log2(lineSize/8))), 
-			totalNonTagBits(numOffsetBits+ciel(log2(numLines))){
-          array = gm_calloc<uint32_t>(numLines);
-          pc_array = gm_calloc<uint8_t>(pow(2, pcHashSize));
-          occVector = gm_calloc<occVect>(numLines);
-          //allocate address array
-        }
+		        //True: Cache-friendly
+		        //False: Cache-averse
+		        bool predictor(const MemReq* req) {
+		          Address hashedPc = (Address) ((unsigned long) addr_hash(req->pc) % (unsigned long) pow(2, pcHashSize));
+		          if (optGenUpdate(req)) {
+		            if (pc_array[hashedPc] < pow(2, predBits) - 1) {
+		              pc_array[hashedPc]++;
+		            }
+		          } else {
+		            if (pc_array[hashedPc] > 0) {
+		              pc_array[hashedPc]--;
+		            }
+		          }
 
-        ~HawkeyeReplPolicy() {
-          gm_free(array);
-          gm_free(pc_array);
-          gm_free(occVector);
-        }
+		          if (pc_array[hashedPc] > pow(2, predBits - 1)) {
+		            return true;
+		          } else {
+		            return false;
+		          }
+		        }
 
-        void update(uint32_t id, const MemReq* req) {
-          if (predictor(req)) {
-            array[id] = 0;
-          } else {
-            array[id] = maxRpv - 1;
-          }
-        }
+		    public:
+		        // add member methods here, refer to repl_policies.h
+		        HawkeyeReplPolicy(uint32_t _numLines, uint32_t lineSize, uint32_t _maxRpv, uint32_t _numWays) : array(0), numLines(_numLines), maxRpv(_maxRpv), numOffsetBits(ceil(log2(lineSize/8))),
+					totalNonTagBits(numOffsetBits+ceil(log2(numLines))), numWays(_numWays) {
+		          array = gm_calloc<uint32_t>(numLines);
+		          pc_array = gm_calloc<uint8_t>(pow(2, pcHashSize));
+		          occVector = gm_calloc<occVect>(numLines);
+		          //allocate address array
+		        }
 
-        void replaced(uint32_t id) {
-          //let update handle it, policy is the same
-        }
+		        ~HawkeyeReplPolicy() {
+		          gm_free(array);
+		          gm_free(pc_array);
+		          gm_free(occVector);
+		        }
 
-        template <typename C> uint32_t rank(const MemReq* req, C cands) {
-            while(true) {
-              for (auto ci = cands.begin(); ci != cands.end(); ci.inc()) {
-                  if(array[*ci] >= maxRpv) {
-                    return *ci;
-                  }
-              }
-              for(auto ci = cands.begin(); ci != cands.end(); ci.inc()) {
-                array[*ci]++;
-              }
-          }
-        }
+		        void update(uint32_t id, const MemReq* req) {
+		          if (predictor(req)) {
+		            array[id] = 0;
+		          } else {
+		            array[id] = maxRpv - 1;
+		          }
+		        }
+
+		        void replaced(uint32_t id) {
+		          //let update handle it, policy is the same
+		        }
+
+		        template <typename C> uint32_t rank(const MemReq* req, C cands) {
+		            while(true) {
+		              for (auto ci = cands.begin(); ci != cands.end(); ci.inc()) {
+		                  if(array[*ci] >= maxRpv) {
+		                    return *ci;
+		                  }
+		              }
+		              for(auto ci = cands.begin(); ci != cands.end(); ci.inc()) {
+		                array[*ci]++;
+		              }
+		          }
+		        }
 
         DECL_RANK_BINDINGS;
 };
