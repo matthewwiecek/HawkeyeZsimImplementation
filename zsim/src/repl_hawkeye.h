@@ -33,7 +33,7 @@ const int occVector_size = 8*MAX_WAYS;
 struct occVect {
 	occVector_element element[occVector_size];
 	uint32_t front = 0;
-	mutex mtx;
+	std::mutex mtx;
 };
 
 // Hawkeye Replacement Policy
@@ -56,7 +56,7 @@ class HawkeyeReplPolicy : public ReplPolicy {
         uint32_t occVector_size;
 
 				bool _optGenUpdate(const MemReq* req, occVect& occVector) {
-				lock_guard<mutex> lck(occVector.mtx);
+				lock_guard<std::mutex> lck(occVector.mtx);
 				  bool toReturn = false;
 				  Address address = req->lineAddr >> totalNonTagBits;
 
