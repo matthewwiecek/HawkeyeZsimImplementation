@@ -52,7 +52,6 @@ class HawkeyeReplPolicy : public ReplPolicy {
         hash<Address> addr_hash;
 
         occVect* occVector;
-        uint32_t occVector_size;
 
 				bool _optGenUpdate(const MemReq* req, occVect& occVector) {
 				  bool toReturn = false;
