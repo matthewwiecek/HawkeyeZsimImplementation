@@ -2,7 +2,7 @@
 #define REPL_HAWKEYE_H_
 
 #include "repl_policies.h"
-#include <mutex>
+
 
 unsigned long modulo(long i, long m) {
 	long result = i % m;
@@ -33,7 +33,6 @@ const int occVector_size = 8*MAX_WAYS;
 struct occVect {
 	occVector_element element[occVector_size];
 	uint32_t front = 0;
-	mutex mtx;
 };
 
 // Hawkeye Replacement Policy
@@ -56,7 +55,6 @@ class HawkeyeReplPolicy : public ReplPolicy {
         uint32_t occVector_size;
 
 				bool _optGenUpdate(const MemReq* req, occVect& occVector) {
-				lock_guard<mutex> lck(occVector.mtx);
 				  bool toReturn = false;
 				  Address address = req->lineAddr >> totalNonTagBits;
 
@@ -71,7 +69,8 @@ class HawkeyeReplPolicy : public ReplPolicy {
 				  occVector.element[occVector.front].entry = 0;
 				  occVector.element[occVector.front].address = address;
 
-				  occVector.front = modulo(occVector.front+1, occVector_size);
+				  occVector.front++;
+				  occVector.front = modulo(occVector.front, occVector_size);
 
 				  return toReturn;
 				}
