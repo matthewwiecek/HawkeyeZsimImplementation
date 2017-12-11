@@ -165,12 +165,12 @@ VOID FFThread(VOID* arg);
 
 InstrFuncPtrs fPtrs[MAX_THREADS] ATTR_LINE_ALIGNED; //minimize false sharing
 
-VOID PIN_FAST_ANALYSIS_CALL IndirectLoadSingle(THREADID tid, ADDRINT pc, ADDRINT addr) {
-    fPtrs[tid].loadPtr(tid, pc, addr);
+VOID PIN_FAST_ANALYSIS_CALL IndirectLoadSingle(THREADID tid, ADDRINT loadPc, ADDRINT addr) {
+    fPtrs[tid].loadPtr(tid, loadPc, addr);
 }
 
-VOID PIN_FAST_ANALYSIS_CALL IndirectStoreSingle(THREADID tid, ADDRINT addr) {
-    fPtrs[tid].storePtr(tid, addr);
+VOID PIN_FAST_ANALYSIS_CALL IndirectStoreSingle(THREADID tid, ADDRINT storePc, ADDRINT addr) {
+    fPtrs[tid].storePtr(tid, storePc, addr);
 }
 
 VOID PIN_FAST_ANALYSIS_CALL IndirectBasicBlock(THREADID tid, ADDRINT bblAddr, BblInfo* bblInfo) {
@@ -181,12 +181,12 @@ VOID PIN_FAST_ANALYSIS_CALL IndirectRecordBranch(THREADID tid, ADDRINT branchPc,
     fPtrs[tid].branchPtr(tid, branchPc, taken, takenNpc, notTakenNpc);
 }
 
-VOID PIN_FAST_ANALYSIS_CALL IndirectPredLoadSingle(THREADID tid, ADDRINT pc, ADDRINT addr, BOOL pred) {
-    fPtrs[tid].predLoadPtr(tid, pc, addr, pred);
+VOID PIN_FAST_ANALYSIS_CALL IndirectPredLoadSingle(THREADID tid, ADDRINT predLoadPc, ADDRINT addr, BOOL pred) {
+    fPtrs[tid].predLoadPtr(tid, predLoadPc, addr, pred);
 }
 
-VOID PIN_FAST_ANALYSIS_CALL IndirectPredStoreSingle(THREADID tid, ADDRINT addr, BOOL pred) {
-    fPtrs[tid].predStorePtr(tid, addr, pred);
+VOID PIN_FAST_ANALYSIS_CALL IndirectPredStoreSingle(THREADID tid, ADDRINT predStorePc, ADDRINT addr, BOOL pred) {
+    fPtrs[tid].predStorePtr(tid, predStorePc, addr, pred);
 }
 
 
@@ -207,14 +207,14 @@ void Join(uint32_t tid) {
     fPtrs[tid] = cores[tid]->GetFuncPtrs(); //back to normal pointers
 }
 
-VOID JoinAndLoadSingle(THREADID tid, ADDRINT pc, ADDRINT addr) {
+VOID JoinAndLoadSingle(THREADID tid, ADDRINT loadPc, ADDRINT addr) {
     Join(tid);
-    fPtrs[tid].loadPtr(tid, pc, addr);
+    fPtrs[tid].loadPtr(tid, loadPc, addr);
 }
 
-VOID JoinAndStoreSingle(THREADID tid, ADDRINT addr) {
+VOID JoinAndStoreSingle(THREADID tid, ADDRINT storePc, ADDRINT addr) {
     Join(tid);
-    fPtrs[tid].storePtr(tid, addr);
+    fPtrs[tid].storePtr(tid, storePc, addr);
 }
 
 VOID JoinAndBasicBlock(THREADID tid, ADDRINT bblAddr, BblInfo* bblInfo) {
@@ -227,23 +227,21 @@ VOID JoinAndRecordBranch(THREADID tid, ADDRINT branchPc, BOOL taken, ADDRINT tak
     fPtrs[tid].branchPtr(tid, branchPc, taken, takenNpc, notTakenNpc);
 }
 
-VOID JoinAndPredLoadSingle(THREADID tid, ADDRINT pc, ADDRINT addr, BOOL pred) {
+VOID JoinAndPredLoadSingle(THREADID tid, ADDRINT predLoadPc, ADDRINT addr, BOOL pred) {
     Join(tid);
-    fPtrs[tid].predLoadPtr(tid, pc, addr, pred);
+    fPtrs[tid].predLoadPtr(tid, predLoadPc, addr, pred);
 }
 
-VOID JoinAndPredStoreSingle(THREADID tid, ADDRINT addr, BOOL pred) {
+VOID JoinAndPredStoreSingle(THREADID tid, ADDRINT predStorePc, ADDRINT addr, BOOL pred) {
     Join(tid);
-    fPtrs[tid].predStorePtr(tid, addr, pred);
+    fPtrs[tid].predStorePtr(tid, predStorePc, addr, pred);
 }
 
 // NOP variants: Do nothing
-VOID NOPLoadSingle(THREADID tid, ADDRINT pc, ADDRINT addr) {}
-VOID NOPStoreSingle(THREADID tid, ADDRINT addr) {}
+VOID NOPLoadStoreSingle(THREADID tid, ADDRINT pc, ADDRINT addr) {}
 VOID NOPBasicBlock(THREADID tid, ADDRINT bblAddr, BblInfo* bblInfo) {}
 VOID NOPRecordBranch(THREADID tid, ADDRINT addr, BOOL taken, ADDRINT takenNpc, ADDRINT notTakenNpc) {}
-VOID NOPPredLoadSingle(THREADID tid, ADDRINT pc, ADDRINT addr, BOOL pred) {}
-VOID NOPPredStoreSingle(THREADID tid, ADDRINT addr, BOOL pred) {}
+VOID NOPPredLoadStoreSingle(THREADID tid, ADDRINT predPc, ADDRINT addr, BOOL pred) {}
 
 // FF is basically NOP except for basic blocks
 VOID FFBasicBlock(THREADID tid, ADDRINT bblAddr, BblInfo* bblInfo) {
@@ -366,12 +364,12 @@ VOID FFIEntryBasicBlock(THREADID tid, ADDRINT bblAddr, BblInfo* bblInfo) {
 
 // Non-analysis pointer vars
 static const InstrFuncPtrs joinPtrs = {JoinAndLoadSingle, JoinAndStoreSingle, JoinAndBasicBlock, JoinAndRecordBranch, JoinAndPredLoadSingle, JoinAndPredStoreSingle, FPTR_JOIN};
-static const InstrFuncPtrs nopPtrs = {NOPLoadSingle, NOPStoreSingle, NOPBasicBlock, NOPRecordBranch, NOPPredLoadSingle, NOPPredStoreSingle, FPTR_NOP};
-static const InstrFuncPtrs retryPtrs = {NOPLoadSingle, NOPStoreSingle, NOPBasicBlock, NOPRecordBranch, NOPPredLoadSingle, NOPPredStoreSingle, FPTR_RETRY};
-static const InstrFuncPtrs ffPtrs = {NOPLoadSingle, NOPStoreSingle, FFBasicBlock, NOPRecordBranch, NOPPredLoadSingle, NOPPredStoreSingle, FPTR_NOP};
+static const InstrFuncPtrs nopPtrs = {NOPLoadStoreSingle, NOPLoadStoreSingle, NOPBasicBlock, NOPRecordBranch, NOPPredLoadStoreSingle, NOPPredLoadStoreSingle, FPTR_NOP};
+static const InstrFuncPtrs retryPtrs = {NOPLoadStoreSingle, NOPLoadStoreSingle, NOPBasicBlock, NOPRecordBranch, NOPPredLoadStoreSingle, NOPPredLoadStoreSingle, FPTR_RETRY};
+static const InstrFuncPtrs ffPtrs = {NOPLoadStoreSingle, NOPLoadStoreSingle, FFBasicBlock, NOPRecordBranch, NOPPredLoadStoreSingle, NOPPredLoadStoreSingle, FPTR_NOP};
 
-static const InstrFuncPtrs ffiPtrs = {NOPLoadSingle, NOPStoreSingle, FFIBasicBlock, NOPRecordBranch, NOPPredLoadSingle, NOPPredStoreSingle, FPTR_NOP};
-static const InstrFuncPtrs ffiEntryPtrs = {NOPLoadSingle, NOPStoreSingle, FFIEntryBasicBlock, NOPRecordBranch, NOPPredLoadSingle, NOPPredStoreSingle, FPTR_NOP};
+static const InstrFuncPtrs ffiPtrs = {NOPLoadStoreSingle, NOPLoadStoreSingle, FFIBasicBlock, NOPRecordBranch, NOPPredLoadStoreSingle, NOPPredLoadStoreSingle, FPTR_NOP};
+static const InstrFuncPtrs ffiEntryPtrs = {NOPLoadStoreSingle, NOPLoadStoreSingle, FFIEntryBasicBlock, NOPRecordBranch, NOPPredLoadStoreSingle, NOPPredLoadStoreSingle, FPTR_NOP};
 
 static const InstrFuncPtrs& GetFFPtrs() {
     return ffiEnabled? (ffiNFF? ffiEntryPtrs : ffiPtrs) : ffPtrs;
@@ -559,9 +557,9 @@ VOID Instruction(INS ins) {
 
         if (INS_IsMemoryWrite(ins)) {
             if (!INS_IsPredicated(ins)) {
-                INS_InsertCall(ins, IPOINT_BEFORE,  StoreFuncPtr, IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_MEMORYWRITE_EA, IARG_END);
+                INS_InsertCall(ins, IPOINT_BEFORE,  StoreFuncPtr, IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_END);
             } else {
-                INS_InsertCall(ins, IPOINT_BEFORE,  PredStoreFuncPtr, IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_MEMORYWRITE_EA, IARG_EXECUTING, IARG_END);
+                INS_InsertCall(ins, IPOINT_BEFORE,  PredStoreFuncPtr, IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_EXECUTING, IARG_END);
             }
         }
 
@@ -1570,3 +1568,4 @@ int main(int argc, char *argv[]) {
     }
     return 0;
 }
+

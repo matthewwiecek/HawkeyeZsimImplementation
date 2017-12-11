@@ -481,4 +481,3 @@ int main(int argc, char *argv[]) {
     if (zinfo && zinfo->globalActiveProcs) warn("Unclean exit of %d children, termination stats were most likely not dumped", zinfo->globalActiveProcs);
     exit(exitCode);
 }
-

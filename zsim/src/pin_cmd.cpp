@@ -182,4 +182,3 @@ void PinCmd::setEnvVars(uint32_t procIdx) {
         wordfree(&p);
     }
 }
-
